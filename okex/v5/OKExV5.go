@@ -717,3 +717,41 @@ func (ok *OKExV5) adaptKLineBar(period KlinePeriod) string {
 	}
 	return bar
 }
+
+type Position struct {
+	InstType string
+	PosId    string
+	PosSide  string
+	InstId   string
+	AvgPx    string
+}
+
+func (ok *OKExV5) GetAccountPosition() ([]Position, error) {
+	// reqBody := make(map[string]interface{})
+
+	path := "/api/v5/account/positions"
+	jsonStr := ""
+	// reqBody["ccy"] = currency
+	// if currency != "" {
+	// 	reqBody["ccy"] = currency
+	// 	jsonStr, _, _ = ok.BuildRequestBody(reqBody)
+	// 	path = fmt.Sprintf("%s?ccy=%s", path, currency)
+	// }
+
+	type BalanceV5Response struct {
+		Code int        `json:"code,string"`
+		Msg  string     `json:"msg"`
+		Data []Position `json:"data"`
+	}
+	var response BalanceV5Response
+
+	err := ok.DoAuthorRequest(http.MethodGet, path, jsonStr, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.Code != 0 {
+		return nil, fmt.Errorf("GetAccountBalances error:%s", response.Msg)
+	}
+	return response.Data, nil
+}
